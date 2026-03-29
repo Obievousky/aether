@@ -77,8 +77,10 @@ if [ -d "$TARGET" ]; then
   exit 1
 fi
 
-# Copy template
-cp -r "$TEMPLATE_DIR" "$TARGET"
+# Create server directory and copy only needed template files
+mkdir -p "$TARGET"
+cp "$TEMPLATE_DIR/Dockerfile" "$TARGET/Dockerfile"
+cp "$TEMPLATE_DIR/docker-compose.yml" "$TARGET/docker-compose.yml"
 
 # Write .env
 cat > "$TARGET/.env" <<EOF
@@ -94,25 +96,31 @@ echo "✓ Server created at $TARGET"
 # Start the server
 echo ""
 echo "Starting server..."
-cd "$TARGET" && docker compose up --build -d
+if ! (cd "$TARGET" && docker compose up --build -d); then
+  echo "ERROR: Failed to start server!"
+  exit 1
+fi
 echo "✓ Server started!"
 
 # Start or restart FileBrowser
 echo ""
 if ! docker ps --format '{{.Names}}' | grep -q "^filebrowser$"; then
   echo "Starting FileBrowser..."
-  cd "$FILEBROWSER_DIR" && docker compose up -d
+  if ! (cd "$FILEBROWSER_DIR" && docker compose up -d); then
+    echo "ERROR: Failed to start FileBrowser!"
+    exit 1
+  fi
   echo "Waiting for FileBrowser to initialize..."
   sleep 5
 else
   echo "Restarting FileBrowser to detect new server..."
-  cd "$FILEBROWSER_DIR" && docker compose restart
+  (cd "$FILEBROWSER_DIR" && docker compose restart)
   sleep 3
 fi
 
 # Grab password from logs if first boot
 FB_PASSWORD=$(docker logs filebrowser 2>&1 | grep -o 'password: [^ ]*' | tail -1 | cut -d' ' -f2)
-HOST_IP=$(hostname -I | awk '{print $1}') # Get host IP
+HOST_IP=$(hostname -I | awk '{print $1}')
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

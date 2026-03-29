@@ -75,14 +75,14 @@ for SERVER in "${TO_DELETE[@]}"; do
 
   echo "  Deleting $SERVER..."
 
-  # Remove device from Tailscale tailnet
+  # Remove Tailscale device from tailnet
   TS_CONTAINER="tailscale-${SERVER_NAME}"
   if docker ps --format '{{.Names}}' | grep -q "^${TS_CONTAINER}$"; then
     echo "  Removing Tailscale device..."
     docker exec "$TS_CONTAINER" tailscale logout 2>/dev/null
   fi
 
-  # Stop and remove containers first
+  # Stop and remove containers, images and volumes
   cd "$TARGET" && docker compose down --rmi all --volumes 2>/dev/null
 
   # Go back before deleting folder
