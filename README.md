@@ -1,4 +1,4 @@
-# 🎮 Docker NeoForge Minecraft Server
+# Docker NeoForge Minecraft Server
 
 Dockerized NeoForge Minecraft server with automatic setup, FileBrowser for mod management, and Tailscale for secure private access — no port forwarding needed.
 
