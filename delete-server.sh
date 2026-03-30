@@ -80,6 +80,7 @@ for SERVER in "${TO_DELETE[@]}"; do
   if docker ps --format '{{.Names}}' | grep -q "^${TS_CONTAINER}$"; then
     echo "  Removing Tailscale device..."
     docker exec "$TS_CONTAINER" tailscale logout 2>/dev/null
+    sleep 2
   fi
 
   # Stop and remove containers, images and volumes
@@ -92,13 +93,6 @@ for SERVER in "${TO_DELETE[@]}"; do
   echo "  ✓ $SERVER deleted!"
   echo ""
 done
-
-# Restart FileBrowser if still running
-if docker ps --format '{{.Names}}' | grep -q "^filebrowser$"; then
-  echo "  Restarting FileBrowser..."
-  cd "$BASE_DIR/filebrowser" && docker compose restart
-  echo "  ✓ FileBrowser updated!"
-fi
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

@@ -6,7 +6,7 @@ services:
     hostname: ${SERVER_NAME:-minecraft-server}
     container_name: tailscale-${SERVER_NAME:-minecraft-server}
     environment:
-      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_AUTHKEY=${TS_AUTHKEY}?ephemeral=true
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_USERSPACE=false
       - TS_EXTRA_ARGS=--advertise-tags=tag:minecraft
@@ -24,18 +24,11 @@ services:
       context: .
       args:
         NEOFORGE_VERSION: ${NEOFORGE_VERSION}
-        USER_ID: ${USER_ID}
-        GROUP_ID: ${GROUP_ID}
     env_file:
       - .env
     network_mode: service:tailscale
     depends_on:
       - tailscale
-    volumes:
-      - ./mods:/server/mods
-      - ./config:/server/config
-      - ./world:/server/world
-      - ./logs:/server/logs
     container_name: ${SERVER_NAME:-minecraft-server}
     environment:
       - JAVA_TOOL_OPTIONS=-Xms${JAVA_MIN_MEMORY:-4G} -Xmx${JAVA_MAX_MEMORY:-8G}

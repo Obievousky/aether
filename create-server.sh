@@ -5,7 +5,6 @@ ANIMALS="platypus narwhal axolotl panda capybara ferret penguin salamander"
 
 BASE_DIR="$(cd "$(dirname "$0")" && pwd)"
 SERVERS_DIR="/home/$USER/minecraft-servers"
-FILEBROWSER_DIR="$BASE_DIR/filebrowser"
 TEMPLATE_DIR="$BASE_DIR/template"
 
 # Check template exists
@@ -27,17 +26,6 @@ if [ -z "$SERVER_NAME" ]; then
   ANIMAL=$(echo $ANIMALS | tr ' ' '\n' | shuf -n1)
   SERVER_NAME="${ADJ}-${ANIMAL}"
   echo "Generated server name: $SERVER_NAME"
-fi
-
-# User
-read -p "User to run the server as (leave empty for current: $USER): " RUN_USER
-RUN_USER=${RUN_USER:-$USER}
-RUN_USER_ID=$(id -u "$RUN_USER" 2>/dev/null)
-RUN_GROUP_ID=$(id -g "$RUN_USER" 2>/dev/null)
-
-if [ -z "$RUN_USER_ID" ]; then
-  echo "ERROR: User '$RUN_USER' not found!"
-  exit 1
 fi
 
 # Fetch latest stable NeoForge version
@@ -88,14 +76,11 @@ if [ -d "$TARGET" ]; then
   exit 1
 fi
 
-# Create server directory and copy only needed template files
+# Create server directory and copy template files
 mkdir -p "$TARGET"
 cp "$TEMPLATE_DIR/Dockerfile" "$TARGET/Dockerfile"
 cp "$TEMPLATE_DIR/docker-compose.yml" "$TARGET/docker-compose.yml"
-
-# Pre-create data folders and set ownership
-mkdir -p "$TARGET/mods" "$TARGET/config" "$TARGET/world" "$TARGET/logs"
-chown -R "$RUN_USER" "$TARGET"
+cp "$TEMPLATE_DIR/supervisord.conf" "$TARGET/supervisord.conf"
 
 # Write .env
 cat > "$TARGET/.env" <<EOF
@@ -104,8 +89,6 @@ SERVER_NAME=${SERVER_NAME}
 JAVA_MIN_MEMORY=${JAVA_MIN_MEMORY}
 JAVA_MAX_MEMORY=${JAVA_MAX_MEMORY}
 TS_AUTHKEY=${TS_AUTHKEY}
-USER_ID=${RUN_USER_ID}
-GROUP_ID=${RUN_GROUP_ID}
 EOF
 
 echo "✓ Server created at $TARGET"
@@ -119,26 +102,6 @@ if ! (cd "$TARGET" && docker compose up --build -d); then
 fi
 echo "✓ Server started!"
 
-# Start or restart FileBrowser
-echo ""
-if ! docker ps --format '{{.Names}}' | grep -q "^filebrowser$"; then
-  echo "Starting FileBrowser..."
-  if ! (cd "$FILEBROWSER_DIR" && docker compose up -d); then
-    echo "ERROR: Failed to start FileBrowser!"
-    exit 1
-  fi
-  echo "Waiting for FileBrowser to initialize..."
-  sleep 5
-else
-  echo "Restarting FileBrowser to detect new server..."
-  (cd "$FILEBROWSER_DIR" && docker compose restart)
-  sleep 3
-fi
-
-# Grab password from logs if first boot
-FB_PASSWORD=$(docker logs filebrowser 2>&1 | grep -o 'password: [^ ]*' | tail -1 | cut -d' ' -f2)
-HOST_IP=$(hostname -I | awk '{print $1}')
-
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  ✓ Setup complete!"
@@ -147,13 +110,7 @@ echo "  Server:      ${SERVER_NAME}-server"
 echo "  NeoForge:    ${NEOFORGE_VERSION}"
 echo "  Connect via: ${SERVER_NAME}.your-tailnet.ts.net:25565"
 echo ""
-echo "  FileBrowser: http://${HOST_IP}:8080"
-echo "  FB User:     admin"
-if [ -n "$FB_PASSWORD" ]; then
-  echo "  FB Password: $FB_PASSWORD"
-else
-  echo "  FB Password: admin (change it immediately!)"
-fi
+echo "  FileBrowser: http://${SERVER_NAME}.your-tailnet.ts.net:8080"
 echo ""
 read -p "  [a] Attach to server console  [e] Exit: " CHOICE
 if [ "$CHOICE" = "a" ]; then
