@@ -1,6 +1,10 @@
 # Docker NeoForge Minecraft Server
 
-Dockerized NeoForge Minecraft server with automatic setup, FileBrowser for mod management, and Tailscale for secure private access — no port forwarding needed.
+Dockerized NeoForge Minecraft server with automatic setup, built-in FileBrowser for server management, and Tailscale for secure private access — no port forwarding needed.
+
+## How it works
+
+Each server is a self-contained Docker image running NeoForge and FileBrowser together via supervisord. Tailscale runs as a sidecar container, giving each server its own private hostname on your tailnet. No ports are exposed to the public internet.
 
 ## Dependencies
 
@@ -26,25 +30,6 @@ Before creating any server you need a Tailscale OAuth client secret.
 
 > The secret goes into `TS_AUTHKEY` when running `create-server.sh`
 
-## Folder structure
-```
-docker-minecraft-server/
-├── create-server.sh       # Server creation script
-├── delete-server.sh       # Server deletion script
-├── filebrowser/           # FileBrowser container
-│   ├── docker-compose.yml
-│   └── filebrowser.json
-└── template/              # Server template (don't touch)
-    ├── .env.example
-    ├── Dockerfile
-    └── docker-compose.yml
-
-~/minecraft-servers/       # Created automatically, lives outside the repo
-├── survival-server/
-├── creative-server/
-└── funky-capybara-server/
-```
-
 ## First Time Setup
 ```bash
 # Clone the repo
@@ -54,6 +39,24 @@ cd docker-minecraft-server
 # Make scripts executable
 chmod +x create-server.sh
 chmod +x delete-server.sh
+```
+
+## Folder Structure
+```
+docker-minecraft-server/
+├── create-server.sh       # Server creation script
+├── delete-server.sh       # Server deletion script
+└── template/              # Server template (don't touch)
+    ├── Dockerfile
+    ├── docker-compose.yml
+    └── supervisord.conf
+
+~/minecraft-servers/       # Created automatically, lives outside the repo
+└── your-server
+    ├── .env               # Your servers .env
+    ├── Dockerfile
+    ├── docker-compose.yml
+    ├── supervisord.conf
 ```
 
 ## Creating a Server
@@ -69,14 +72,14 @@ The script will ask for:
 - **Max memory** — defaults to 8G
 - **Tailscale auth key** — the OAuth secret from above
 
-It will then create the server folder, write the `.env`, start FileBrowser if not already running, boot the server, and give you the option to attach to the console.
+It will then create the server folder, write the `.env`, build and boot the server.
 
 ## Deleting a Server
 ```bash
 ./delete-server.sh
 ```
 
-Lists all available servers and lets you pick one or all to delete. Stops and removes all containers, images, volumes, and files. Requires typing `yes` to confirm.
+Lists all available servers and lets you pick one or all to delete. Logs out the Tailscale device, stops and removes all containers, images, volumes, and files. Requires typing `yes` to confirm.
 
 ## Managing Multiple Servers
 
@@ -93,14 +96,14 @@ For example: `survival.your-tailnet.ts.net:25565`
 
 ## FileBrowser
 
-FileBrowser starts automatically with the first server and runs at:
+Each server has its own FileBrowser instance running at:
 ```
-http://localhost:8080
+http://<SERVER_NAME>.your-tailnet.ts.net:8080
 ```
 
-Default login is `admin / admin` — **change it immediately** in Settings → User Management.
+No login required — accessible only to people on your Tailscale tailnet.
 
-From FileBrowser you can upload mods, edit configs, and manage files for all your servers in one place.
+From FileBrowser you can upload mods, edit configs, and manage all server files directly from your browser.
 
 ## Environment Variables
 

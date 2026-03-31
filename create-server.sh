@@ -78,9 +78,7 @@ fi
 
 # Create server directory and copy template files
 mkdir -p "$TARGET"
-cp "$TEMPLATE_DIR/Dockerfile" "$TARGET/Dockerfile"
-cp "$TEMPLATE_DIR/docker-compose.yml" "$TARGET/docker-compose.yml"
-cp "$TEMPLATE_DIR/supervisord.conf" "$TARGET/supervisord.conf"
+cp -r "$TEMPLATE_DIR"/* "$TARGET/"
 
 # Write .env
 cat > "$TARGET/.env" <<EOF
