@@ -1,10 +1,9 @@
-name: ${SERVER_NAME:-minecraft-server}
-
+name: ${SERVER_NAME:-Aether}
 services:
   tailscale:
     image: tailscale/tailscale:latest
-    hostname: ${SERVER_NAME:-minecraft-server}
-    container_name: tailscale-${SERVER_NAME:-minecraft-server}
+    hostname: ${SERVER_NAME:-Aether}
+    container_name: tailscale-${SERVER_NAME:-Aether}
     environment:
       - TS_AUTHKEY=${TS_AUTHKEY}?ephemeral=true
       - TS_STATE_DIR=/var/lib/tailscale
@@ -24,12 +23,13 @@ services:
       context: .
       args:
         NEOFORGE_VERSION: ${NEOFORGE_VERSION}
+    image: aether:${NEOFORGE_VERSION}
     env_file:
       - .env
     network_mode: service:tailscale
     depends_on:
       - tailscale
-    container_name: ${SERVER_NAME:-minecraft-server}
+    container_name: ${SERVER_NAME:-Aether}
     environment:
       - JAVA_TOOL_OPTIONS=-Xms${JAVA_MIN_MEMORY:-4G} -Xmx${JAVA_MAX_MEMORY:-8G}
     stdin_open: true

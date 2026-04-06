@@ -15,7 +15,7 @@ if [ ! -d "$TEMPLATE_DIR" ]; then
 fi
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  NeoForge Server Setup"
+echo "  Aether Minecraft Server Setup"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
@@ -94,26 +94,44 @@ echo "✓ Server created at $TARGET"
 # Start the server
 echo ""
 echo "Starting server..."
-if ! (cd "$TARGET" && docker compose up --build -d); then
+if ! (cd "$TARGET" && docker compose up -d); then
   echo "ERROR: Failed to start server!"
   exit 1
 fi
 echo "✓ Server started!"
+echo ""
+echo -n "Waiting for Tailscale to authenticate"
+for i in {1..3}; do
+  echo -n "."
+  sleep 1
+  echo -n "."
+  sleep 1
+  echo -n "."
+  sleep 1
+  echo -ne "\b\b\b   \b\b\b"
+done
+echo ""
 
-echo ""
+TS_IP=$(docker exec tailscale-${SERVER_NAME} tailscale ip -4 2>/dev/null)
+TS_DNS=$(docker exec tailscale-${SERVER_NAME} tailscale status --json 2>/dev/null \
+  | grep -o '"DNSName":"[^"]*"' | head -1 | cut -d'"' -f4 | sed 's/\.$//')
+
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  ✓ Setup complete!"
+echo " ✓ Setup complete!"
 echo ""
-echo "  Server:      ${SERVER_NAME}-server"
-echo "  NeoForge:    ${NEOFORGE_VERSION}"
-echo "  Connect via: ${SERVER_NAME}.your-tailnet.ts.net:25565"
+echo " Server:    ${SERVER_NAME}"
+echo " NeoForge:  ${NEOFORGE_VERSION}"
 echo ""
-echo "  FileBrowser: http://${SERVER_NAME}.your-tailnet.ts.net:8080"
+echo " Tailscale IP:  ${TS_IP:-unavailable}"
+echo " Tailscale DNS: ${TS_DNS:-unavailable}"
 echo ""
-read -p "  [a] Attach to server console  [e] Exit: " CHOICE
+echo " Minecraft:  ${TS_IP:-<ip>}:25565"
+echo " FileBrowser: http://${TS_IP:-<ip>}:8080"
+echo ""
+read -p " [a] Attach to server console [e] Exit: " CHOICE
 if [ "$CHOICE" = "a" ]; then
-  docker attach "$SERVER_NAME"
+  docker attach "${SERVER_NAME}"
 else
-  echo "  Exiting. Server is running in the background!"
+  echo " Exiting. Server is running in the background!"
 fi
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
