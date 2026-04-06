@@ -42,22 +42,19 @@ chmod +x delete-server.sh
 ```
 
 ## Folder Structure
-```
-docker-minecraft-server/
+aether/
 ├── create-server.sh       # Server creation script
 ├── delete-server.sh       # Server deletion script
-└── template/              # Server template (don't touch)
-    ├── Dockerfile
-    ├── docker-compose.yml
-    └── supervisord.conf
-
+└── template/              # Server template
+├── Dockerfile
+├── docker-compose.yml
+└── supervisord.conf
 ~/minecraft-servers/       # Created automatically, lives outside the repo
 └── your-server
-    ├── .env               # Your servers .env
-    ├── Dockerfile
-    ├── docker-compose.yml
-    └── supervisord.conf
-```
+├── .env               # Your server's configuration
+├── Dockerfile
+├── docker-compose.yml
+└── supervisord.conf
 
 ## Creating a Server
 ```bash
@@ -87,19 +84,15 @@ Just run `./create-server.sh` again with a different name. Each server is fully 
 
 ## Connecting to a Server
 
-Players need to be on your Tailscale tailnet. Once they are, they connect via:
-```
-<SERVER_NAME>.your-tailnet.ts.net:25565
-```
+Players need to be on your Tailscale tailnet. Once they are, they connect using just the server name:
+<SERVER_NAME>:25565
 
-For example: `survival.your-tailnet.ts.net:25565`
+For example: `survival:25565`
 
 ## FileBrowser
 
 Each server has its own FileBrowser instance running at:
-```
-http://<SERVER_NAME>.your-tailnet.ts.net:8080
-```
+http://<SERVER_NAME>:8080
 
 No login required — accessible only to people on your Tailscale tailnet.
 
@@ -133,9 +126,9 @@ chmod +x delete-server.sh
 ```
 
 ### Template folder not found
-If the script says the template folder is missing, make sure you are running the scripts from inside the `docker-minecraft-server/` folder:
+If the script says the template folder is missing, make sure you are running the scripts from inside the `aether/` folder:
 ```bash
-cd docker-minecraft-server
+cd aether
 ./create-server.sh
 ```
 
@@ -145,6 +138,7 @@ Make sure you have created the `tag:minecraft` tag in Access Controls **before**
 ## Disclosure
 
 This project was built with the help of [Claude](https://claude.ai)
+
 ## License
 
 MIT
