@@ -33,7 +33,7 @@ Before creating any server you need a Tailscale OAuth client secret.
 ## First Time Setup
 ```bash
 # Clone the repo
-git clone https://github.com/Obievousky/docker-minecraft-server.git
+git clone https://github.com/Obievousky/Aether.git
 cd docker-minecraft-server
 
 # Make scripts executable
