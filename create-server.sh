@@ -126,8 +126,8 @@ echo "     Hostname: ${SERVER_NAME}:25565"
 echo "     IP:       ${TS_IP:-unavailable}:25565"
 echo ""
 echo "  FileBrowser (port 80)"
-echo "     Hostname: http://${SERVER_NAME}"
-echo "     IP:       http://${TS_IP:-unavailable}"
+echo "     Hostname: http://${SERVER_NAME}/"
+echo "     IP:       http://${TS_IP:-unavailable}/"
 echo ""
 read -p "  [a] Attach to server console  [e] Exit: " CHOICE
 if [ "$CHOICE" = "a" ]; then
