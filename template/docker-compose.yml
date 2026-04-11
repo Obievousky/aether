@@ -49,6 +49,8 @@ services:
       - neoforge
     volumes:
       - server-data:/srv
+    environment:
+      - FB_NOAUTH=true
     restart: unless-stopped
 
 volumes:
