@@ -44,6 +44,7 @@ services:
     image: filebrowser/filebrowser:latest
     container_name: filebrowser-${SERVER_NAME:-aether}
     network_mode: service:tailscale
+    user: root
     depends_on:
       - tailscale
       - neoforge
