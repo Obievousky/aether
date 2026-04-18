@@ -75,24 +75,23 @@ for SERVER in "${TO_DELETE[@]}"; do
 
   echo "  Deleting $SERVER..."
 
-TS_CONTAINER="tailscale-${SERVER_NAME}"
+  TS_CONTAINER="tailscale-${SERVER_NAME}"
 
-if docker ps --format '{{.Names}}' | grep -q "^${TS_CONTAINER}$"; then
-  echo "  Removing Tailscale device..."
-  for i in {1..4}; do
-    docker exec "$TS_CONTAINER" tailscale logout >/dev/null 2>&1 && break
-    sleep 1
-  done
-
-  if docker exec "$TS_CONTAINER" tailscale status >/dev/null 2>&1; then
-    echo "  WARNING: Failed to remove Tailscale device. It may still appear in your tailnet dashboard."
-  else
-    echo "  ✓ Tailscale device removed!"
+  if docker ps --format '{{.Names}}' | grep -q "^${TS_CONTAINER}$"; then
+    echo "  Removing Tailscale device..."
+    for i in {1..4}; do
+      docker exec "$TS_CONTAINER" tailscale logout >/dev/null 2>&1 && break
+      sleep 1
+    done
+    echo "  ✓ Tailscale logout sent!"
   fi
-fi
 
   # Stop and remove containers, images and volumes
-  cd "$TARGET" && docker compose down --rmi all --volumes 2>/dev/null
+  if ! cd "$TARGET" 2>/dev/null; then
+    echo "  ERROR: Could not access $TARGET, skipping docker compose down."
+  else
+    docker compose down --rmi all --volumes 2>/dev/null
+  fi
 
   # Go back before deleting folder
   cd "$SERVERS_DIR"
