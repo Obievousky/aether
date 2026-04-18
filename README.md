@@ -4,7 +4,7 @@ Dockerized NeoForge Minecraft server with automatic setup, built-in FileBrowser 
 
 ## How it works
 
-Each server is a self-contained Docker image running NeoForge and FileBrowser together via supervisord. Tailscale runs as a sidecar container, giving each server its own private hostname on your tailnet. No ports are exposed to the public internet.
+Each server runs three Docker containers managed by Docker Compose: a NeoForge game server, a FileBrowser instance for web-based file management, and a Tailscale sidecar. All network traffic is routed through the Tailscale container, giving each server its own private hostname on your tailnet. No ports are exposed to the public internet.
 
 ## Dependencies
 
@@ -52,15 +52,13 @@ aether/
 ├── delete-server.sh       # Server deletion script
 └── template/              # Server template
     ├── Dockerfile
-    ├── docker-compose.yml
-    └── supervisord.conf
+    └── docker-compose.yml
 
 ~/minecraft-servers/       # Created automatically, lives outside the repo
 └── your-server
     ├── .env               # Your server's configuration
     ├── Dockerfile
-    ├── docker-compose.yml
-    └── supervisord.conf
+    └── docker-compose.yml
 ```
 
 ## Creating a Server
@@ -106,7 +104,7 @@ For example: `survival:25565`
 Each server has its own FileBrowser instance running at:
 
 ```
-http://<SERVER_NAME>:8080
+http://<SERVER_NAME>/
 ```
 
 No login required — accessible only to people on your Tailscale tailnet.
